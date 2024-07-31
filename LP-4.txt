@@ -1,0 +1,83 @@
+const { MongoClient, ObjectId } = require("mongodb")
+
+const url = "mongodb://localhost:27017"
+const dbName = "College"
+const client = new MongoClient(url, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+
+async function connectDB() {
+  try {
+    await client.connect()
+    console.log("Connected to the database")
+  } catch (error) {
+    console.error("Error connecting to the database:", error)
+  }
+}
+
+async function insertStudent(student) {
+  const db = client.db(dbName)
+  try {
+    const result = await db.collection("students").insertOne(student)
+    console.log("Student with id ${result.insertedId} inserted successfully")
+  } catch (err) {
+    console.error("Error inserting student:", err)
+  }
+}
+
+async function updateStudent() {
+  const db = client.db(dbName)
+  try {
+    const result = await db
+      .collection("Student")
+      .updateOne(
+        { _id: new ObjectId("66667a24ace74f68b2cdcdf6") },
+        { $set: { Dept: "CSE" } }
+      )
+    console.log("Student data updated successfully")
+  } catch (err) {
+    console.error("Error updating student:", err)
+  }
+}
+
+async function findAllStudents() {
+  const db = client.db(dbName)
+  try {
+    const students = await db.collection("students").find({}).toArray()
+    console.log("All students:", students)
+  } catch (err) {
+    console.error("Error finding students:", err)
+  }
+}
+
+async function deleteStudent(Id) {
+  const db = client.db(dbName)
+  try {
+    const result = await db
+      .collection("students")
+      .deleteOne({ _id: new ObjectId(Id) })
+    console.log("Student with id ${_id} deleted successfully")
+  } catch (err) {
+    console.error("Error deleting student:", err)
+  }
+}
+
+async function main() {
+  await connectDB()
+  try {
+    const exampleStudent = { name: "Monisha", age: 19, cgpa: 9.1, Dept: "CSE" }
+    await insertStudent(exampleStudent)
+    await findAllStudents()
+    await updateStudent()
+    const studentIdToDelete = "66a9872be524a1ed6fb529e7" // Replace with an existing student id
+    await deleteStudent(studentIdToDelete)
+  } catch (err) {
+    console.error("Error during operations:", err)
+  } finally {
+    await client.close()
+    console.log("Connection closed")
+  }
+}
+
+main().catch(console.error)
